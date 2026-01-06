@@ -1,0 +1,49 @@
+Initially trained the model with the default YOLO11 settings but the augmentation might have been too aggressive, cropping in particular might have affected training in a negative way, after tunning down the augmentations manually and increasing the image size, the model performed considerably better in all scenarios. It's still worth noting that the dataset used has a green screen background for all samples.
+Dataset Source: https://www.kaggle.com/datasets/drgfreeman/rockpaperscissors
+
+Had to create a venv in windows so that I could access the webcam directly running the app on windows instead of WSL 
+
+TO MAKE THIS WORK IN WSL YOU MUST:
+Set up a custom config file for the wsl kernel that supports device access (link to someone who got something similar to it working) 
+Source: https://github.com/PINTO0309/wsl2_linux_kernel_usbcam_enable_conf
+
+Source for the information about USB/IP tools (WSL): https://github.com/dorssel/usbipd-win?tab=readme-ov-file#share-devices
+• Install USB/IP Tools on Windows 
+You need the usbipd-win tool to manage the forwarding of USB devices: usbipd-win installer (.msi file) from the official GitHub page
+
+• Install USB/IP Tools on WSL (POWERSHELL as ADMIN)
+Next, install the client-side tools within your WSL distribution. First update your package lists
+# sudo apt-get update
+• Then install the usbip tools for WSL
+# sudo apt-get install linux-tools-generic linux-tools-wsl
+• List all available USB devices to find your webcam's bus ID:
+# usbipd list
+• Identify your webcam in the list (look for "webcam" or the manufacturer's name) and note its BUSID (e.g., 4-4).
+• Bind the device, making it available for WSL attachment:
+# usbipd bind --busid <busid>
+(Replace <busid> with the actual ID from the previous step).
+• Once the device is bound, you can attach it to WSL (do not close the administrator PowerShell window):
+# usbipd attach --wsl --busid <busid>
+
+(You no longer need administrator privileges for this step, but run it from the same PowerShell instance for simplicity). 
+5. Verify and Use in WSL
+The device is now connected to your WSL instance. 
+Return to your WSL terminal.
+Verify the device is connected using the Linux command lsusb:
+# sudo apt install usbutils
+# lsusb
+You should see your webcam listed. It will likely appear as a device file such as /dev/video0.
+You can now use Linux applications (like guvcview or cheese) or programming libraries (like OpenCV) to access the camera within WSL. 
+
+Important Note: While the device is attached to WSL, it cannot be used by Windows applications. To switch back, run the detach command in an administrator PowerShell prompt: 
+powershell
+# usbipd detach --busid <busid>
+
+Sharing a device is persistent; it survives reboots. (bind)
+Attaching devices to a client is non-persistent. You will have to re-attach after a reboot, or when the device resets or is physically unplugged/replugged.
+
+and for a gui (not using it atm)
+https://gitlab.com/alelec/wsl-usb-gui
+
+alternative
+https://medium.com/@mominaman/stream-webcam-to-wsl-opencv-983e90ed7301
